@@ -1,0 +1,25 @@
+<!doctype html><html><head><meta charset="utf-8"><title>MediCart</title>
+<style>body{font-family:sans-serif;max-width:720px;margin:20px auto}.card{border:1px solid #ccc;padding:8px;margin:6px 0}</style></head><body>
+<h1>MediCart</h1>
+<input id="search" data-testid="search" placeholder="Search medicines"><button data-testid="search-btn" onclick="load()">Search</button>
+<div id="list" data-testid="list"></div>
+<h2>Cart</h2><div id="cart" data-testid="cart">Empty</div>
+<input id="coupon" data-testid="coupon-input" placeholder="Coupon"><button data-testid="apply-coupon" onclick="applyCoupon()">Apply</button>
+<div id="msg" data-testid="msg"></div>
+<select data-testid="payment"><option>UPI</option><option>CARD</option><option>COD</option></select>
+<button data-testid="rx-upload" onclick="uploadRx()">Upload prescription</button>
+<button data-testid="checkout" onclick="checkout()">Place order</button>
+<div id="order" data-testid="order"></div>
+<script>
+const H={'content-type':'application/json','x-user-id':'ui-user'};let rx=null;
+const api=(p,o={})=>fetch('/api'+p,{headers:H,...o}).then(async r=>({s:r.status,b:await r.json()}));
+async function load(){const q=document.getElementById('search').value;const {b}=await api('/medicines?q='+encodeURIComponent(q));
+document.getElementById('list').innerHTML=b.items.map(m=>`<div class="card" data-testid="med-${m.id}"><b>${m.name}</b> ₹${m.price} ${m.rxRequired?'<span data-testid="rx-badge">Rx</span>':''} ${m.stock===0?'<i>Out of stock</i>':`<button data-testid="add-${m.id}" onclick="add('${m.id}')">Add</button>`}</div>`).join('')}
+async function add(id){const r=await api('/cart/items',{method:'POST',body:JSON.stringify({medicineId:id,qty:1})});msg(r);cart()}
+async function cart(){const {b}=await api('/cart');document.getElementById('cart').innerHTML=b.items.length?b.items.map(i=>`<div>${i.name} x${i.qty}</div>`).join('')+`<div data-testid="subtotal">Subtotal: ${b.subtotal}</div><div data-testid="discount">Discount: ${b.discount}</div><div data-testid="delivery">Delivery: ${b.delivery}</div><div data-testid="total">Total: ${b.total}</div>`:'Empty'}
+async function applyCoupon(){const r=await api('/cart/coupon',{method:'POST',body:JSON.stringify({code:document.getElementById('coupon').value})});msg(r);cart()}
+async function uploadRx(){const r=await api('/prescriptions',{method:'POST',body:JSON.stringify({fileName:'rx.pdf'})});rx=r.b.id;msg({b:{message:'Prescription uploaded'}})}
+async function checkout(){const pm=document.querySelector('[data-testid=payment]').value;const r=await api('/orders',{method:'POST',body:JSON.stringify({paymentMethod:pm,prescriptionId:rx})});msg(r);if(r.s===201){document.getElementById('order').textContent='Order '+r.b.id+' '+r.b.status;cart()}}
+function msg(r){document.getElementById('msg').textContent=r.b.error?(r.b.error+': '+r.b.message):(r.b.message||'')}
+load();cart();
+</script></body></html>
