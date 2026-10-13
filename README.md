@@ -2,7 +2,7 @@
 
 End-to-end test automation for a mock e-pharmacy (search → cart → coupons → Rx validation → checkout → order lifecycle), inspired by real healthcare-commerce domain rules. The system under test is a self-contained mock; no proprietary code or data is used.
 
-## What is covered (79 automated tests)
+## What is covered (79 Playwright tests + 55 Java Rest Assured/TestNG tests)
 | Service | Examples |
 |---|---|
 | Pharmacy orders | totals & delivery boundary, coupon rules, qty limits, Rx enforcement, payment-failure rollback, idempotent orders, ownership/403, order state machine, cancel → stock restore + refund, concurrent checkout (no overselling) |
@@ -11,6 +11,13 @@ End-to-end test automation for a mock e-pharmacy (search → cart → coupons �
 | AI assistant | intent routing, answers grounded in real order/stock data, privacy (no cross-user leakage), **safety guardrails** (dosage refusal, emergency escalation) |
 | Contract | JSON-schema (Ajv) for medicines, orders, uniform error shape |
 | UI E2E (Playwright, Page Object) | purchase journey, Rx gate, OOS, bad coupon, UI↔backend consistency |
+
+## Java API suite (Rest Assured + TestNG)
+`java-api-tests/` is a second, independent API suite in **Java 17 + Rest Assured + TestNG** (JSON-schema validation, DataProviders for invalid quantities/coupons, parallel-thread concurrent-checkout oversell test) covering catalog, cart, orders, diagnostics, doctor consults and the chatbot.
+```
+npm start &                       # MediCart on :3100 (PORT=3100)
+mvn -f java-api-tests/pom.xml test   # -DbaseUrl=http://host:port to retarget
+```
 
 ## Design
 - Isolated state per test (reset endpoint + per-test user fixture) → deterministic, no ordering dependence.

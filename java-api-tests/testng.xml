@@ -1,0 +1,6 @@
+<!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
+<suite name="MediCart API (Java, Rest Assured)">
+  <test name="API suite">
+    <packages><package name="com.daksh.medicart.tests"/></packages>
+  </test>
+</suite>

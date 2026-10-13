@@ -1,0 +1,13 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": ["id", "name", "price", "stock", "rxRequired"],
+  "properties": {
+    "id": {"type": "string"},
+    "name": {"type": "string"},
+    "price": {"type": "number", "minimum": 0},
+    "stock": {"type": "integer", "minimum": 0},
+    "rxRequired": {"type": "boolean"}
+  },
+  "additionalProperties": false
+}
